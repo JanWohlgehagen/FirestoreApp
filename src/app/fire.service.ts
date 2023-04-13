@@ -31,7 +31,7 @@ export class FireService {
             this.chats.push({id: change.doc.id, data: change.doc.data()});
           }
           if (change.type=="modified"){
-            const index = this.messages.findIndex(document => document.id!= change.doc.id);
+            const index = this.chats.findIndex(document => document.id.toString() == this.openChatId.toString());
             this.chats[index] = {
               id: change.doc.id,
               data: change.doc.data()
@@ -75,7 +75,7 @@ export class FireService {
       chatname: chatname,
       messageCounter: 0
     }
-    console.log(this.openChatId)
+
     this.firestore.collection(`Chats`)
       .add(chat)
   }
