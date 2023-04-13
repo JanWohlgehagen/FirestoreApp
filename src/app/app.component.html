@@ -1,0 +1,29 @@
+
+Chat Name: <input [(ngModel)]="chatname">
+<button (click)="fireService.CreateNewChat(chatname)"> + </button>
+<br><br>
+
+<p *ngFor="let chat of fireService.chats">
+  {{chat.data.chatname}}, messages: {{chat.data.messageCounter}}
+  <br>
+  <button (click)="fireService.DeleteChat(chat.id)">Delete</button>
+  <button (click)="fireService.getMessagesFromChat(chat.id, chat.data.messageCounter)">Open Chat</button>
+  <br><br>
+</p>
+
+<div *ngIf="fireService.openChatId != undefined">
+  <button (click)="fireService.sendMessage(content)">Send Message</button>
+  <input [(ngModel)]="content">
+</div>
+
+<div *ngIf="fireService.messages != undefined">
+  <p *ngFor="let message of fireService.messages">
+    {{message.data.timestamp}} - {{message.data.userid}}:
+    {{message.data.content}}
+    <br>
+  </p>
+</div>
+
+
+
+
