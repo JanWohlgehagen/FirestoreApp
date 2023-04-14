@@ -1,27 +1,39 @@
-
-Chat Name: <input [(ngModel)]="chatname">
-<button (click)="fireService.CreateNewChat(chatname)"> + </button>
-<br><br>
-
-<p *ngFor="let chat of fireService.chats">
-  {{chat.data.chatname}}, messages: {{chat.data.messageCounter}}
-  <br>
-  <button (click)="fireService.DeleteChat(chat.id)">Delete</button>
-  <button (click)="fireService.getMessagesFromChat(chat.id, chat.data.messageCounter)">Open Chat</button>
+<div style="width: 24%; float: left; margin: 10px">
+  Chat Name: <input [(ngModel)]="chatname">
+  <button (click)="fireService.CreateNewChat(chatname)"> + </button>
   <br><br>
-</p>
 
-<div *ngIf="fireService.openChatId != undefined">
-  <button (click)="fireService.sendMessage(content)">Send Message</button>
-  <input [(ngModel)]="content">
+
+  <p *ngFor="let chat of fireService.chats">
+    {{chat.data.chatname}}, messages: {{chat.data.messageCounter}}
+    <br>
+    <button (click)="fireService.DeleteChat(chat.id)">Delete</button>
+    <button (click)="fireService.getMessagesFromChat(chat.id, chat.data.messageCounter)">Open Chat</button>
+    <br><br>
+  </p>
 </div>
 
-<div *ngIf="fireService.messages != undefined">
-  <p *ngFor="let message of fireService.messages">
-    {{message.data.timestamp}} - {{message.data.userid}}:
-    {{message.data.content}}
-    <br>
-  </p>
+<div *ngIf="fireService.openChatId != undefined"  style="width: 74%; float: right">
+  <mat-card style="margin: 25px; padding: 25px">
+
+    <div *ngIf="fireService.messages != undefined">
+      <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word">
+        <strong>{{message.data.timestamp | date:'hh:mm:ss dd/MM'}} from Jan:</strong><br>
+        {{message.data.content}}
+        <br><br>
+      </div>
+    </div>
+
+    <div *ngIf="fireService.openChatId != undefined">
+
+
+
+      <mat-form-field style="width: 100%;">
+        <textarea matInput [(ngModel)]="content" style="float: left; overflow: hidden"></textarea>
+        <button mat-raised-button color="primary" style="float: right" (click)="fireService.sendMessage(content)">Send Message</button>
+      </mat-form-field>
+    </div>
+  </mat-card>
 </div>
 
 

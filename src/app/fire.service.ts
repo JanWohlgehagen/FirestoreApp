@@ -90,7 +90,7 @@ export class FireService {
     await this.firestore.collection(`Chats/${this.openChatId}/messages`)
       .add(message)
 
-    this.firestore.collection('Chats/').doc(this.openChatId)
+    await this.firestore.collection('Chats/').doc(this.openChatId)
       .update({
        messageCounter: this.messageCounter+1
       }).then( ()=>{
