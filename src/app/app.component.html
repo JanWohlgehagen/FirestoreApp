@@ -1,39 +1,56 @@
-<div style="width: 24%; float: left; margin: 10px">
-  Chat Name: <input [(ngModel)]="chatname">
-  <button (click)="fireService.CreateNewChat(chatname)"> + </button>
-  <br><br>
 
+
+
+<!-- Div for the chats -->
+<div style="width: 24%; float: left; margin: 10px; height: 97vh; overflow:auto">
+  <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2">
+    <strong>Chat Name:</strong>
+    <mat-form-field>
+        <input matInput [(ngModel)]="chatname">
+    </mat-form-field>
+    <button mat-raised-button (click)="fireService.CreateNewChat(chatname)" style="margin-left: 15px"> + </button>
+    <br>
+  </div>
+  <br>
 
   <p *ngFor="let chat of fireService.chats">
     {{chat.chatname}}, messages: {{chat.messageCounter}}
     <br>
-    <button (click)="fireService.DeleteChat(chat.id)">Delete</button>
-    <button (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)">Open Chat</button>
+    <br>
+    <button mat-raised-button color="primary" (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)" >Open Chat</button>
+    <button mat-raised-button color="warn" (click)="fireService.DeleteChat(chat.id)" style="float: right">Delete</button>
+
     <br><br>
+    <mat-divider></mat-divider>
   </p>
 </div>
 
+
+<!-- Div for the open chat -->
 <div *ngIf="fireService.openChatId != undefined"  style="width: 74%; float: right">
-  <mat-card style="margin: 25px; padding: 25px">
+  <p style="font-size: 24px; margin: auto; padding: 5px">Placeholder</p>
+  <mat-card id="ChatBox" style="padding: 25px; height: 80vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
+    <div *ngIf="fireService.messages.length == 0" style="margin: auto">
+      <p style="font-size: 24px; margin: auto">This chat appears empty... 😢</p>
+      <br>
+      <p style="font-size: 24px; margin: auto">Be the first to write a message! 🥳</p>
+    </div>
 
     <div *ngIf="fireService.messages != undefined">
-      <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word">
+      <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word;">
         <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from Jan:</strong><br>
         {{message.content}}
         <br><br>
       </div>
     </div>
-
-    <div *ngIf="fireService.openChatId != undefined">
-
-
-
-      <mat-form-field style="width: 100%;">
-        <textarea matInput [(ngModel)]="content" style="float: left; overflow: hidden"></textarea>
-        <button mat-raised-button color="primary" style="float: right" (click)="fireService.sendMessage(content)">Send Message</button>
-      </mat-form-field>
-    </div>
   </mat-card>
+
+  <div *ngIf="fireService.openChatId != undefined" style="position: sticky; bottom: 0;">
+    <mat-form-field style="width: 100%;">
+      <textarea matInput [(ngModel)]="content" style="float: left; overflow: hidden"></textarea>
+      <button mat-raised-button color="primary" style="float: right" (click)="fireService.sendMessage(content)">Send Message</button>
+    </mat-form-field>
+  </div>
 </div>
 
 

@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 
 import * as config from '../../firebaseconfig.js';
+
 
 @Injectable({
   providedIn: 'root'
@@ -84,6 +85,7 @@ export class FireService {
       timestamp: new Date(),
       userid: '2'
     }
+    var element = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
 
     await this.firestore.collection(`Chats/${this.openChatId}/messages`)
       .add(message)
@@ -94,6 +96,8 @@ export class FireService {
       }).then( ()=>{
       this.messageCounter +=1
     })
+    // @ts-ignore
+    element.scrollTop = element.scrollHeight; //scroll to bottom of the chat box
 
   }
 
