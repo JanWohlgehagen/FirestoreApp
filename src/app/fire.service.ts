@@ -27,19 +27,18 @@ export class FireService {
       .collection('Chats')
       .onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change =>{
+          let chat: ChatDTO = this.convertJsonToChatDTO(change.doc.id, change.doc.data());
           if(change.type=="added"){
-            this.chats.push({id: change.doc.id, data: change.doc.data()});
+            this.chats.push(chat);
           }
           if (change.type=="modified"){
             const index = this.chats.findIndex(document => document.id.toString() == this.openChatId.toString());
-            this.chats[index] = {
-              id: change.doc.id,
-              data: change.doc.data()
-            }
+            this.chats[index] = chat
           }
           if (change.type=="removed"){
-            this.chats = this.chats.filter(m => m.id != change.doc.id);
+            this.chats = this.chats.filter(m => m.id != chat.id);
           }
+          this.chats.sort((a,b) => b.messageCounter - a.messageCounter)
         })
       })
   }
@@ -53,19 +52,18 @@ export class FireService {
       .collection(`/Chats/${id}/messages`)
       .onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change =>{
+          let message: MessageDTO = this.convertJsonToMessageDTO(change.doc.id, change.doc.data());
           if(change.type=="added"){
-            this.messages.push({id: change.doc.id, data: change.doc.data()});
+            this.messages.push(message);
           }
           if (change.type=="modified"){
             const index = this.messages.findIndex(document => document.id!= change.doc.id);
-            this.messages[index] = {
-              id: change.doc.id,
-              data: change.doc.data()
-            }
+            this.messages[index] = message;
           }
           if (change.type=="removed"){
-            this.messages = this.messages.filter(m => m.id != change.doc.id);
+            this.messages = this.messages.filter(m => m.id != message.id);
           }
+          this.messages.sort((a,b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
         })
       })
   }
@@ -83,7 +81,7 @@ export class FireService {
   async sendMessage(content: any) {
     let message : MessageDTO = {
       content: content,
-      timestamp: new Date().toString(),
+      timestamp: new Date(),
       userid: '2'
     }
 
@@ -99,18 +97,43 @@ export class FireService {
 
   }
 
-  DeleteChat(messagesId: any) {
-    this.firestore.collection('Chats').doc(messagesId).delete()
-
+  DeleteChat(chat_id: any) {
+    this.firestore.collection('Chats').doc(chat_id).delete()
+    if (chat_id === this.openChatId) {
+      this.openChatId = undefined;
+    }
   }
+
+  convertJsonToMessageDTO(id: any, data: any): MessageDTO{
+    const messageDTO: MessageDTO = {
+      content: data.content,
+      timestamp: data.timestamp.toDate(),
+      userid: data.user,
+      id: id
+    }
+    return messageDTO;
+  }
+
+  convertJsonToChatDTO(id: any, data: any): ChatDTO{
+    const chatDTO: ChatDTO = {
+      chatname: data.chatname,
+      messageCounter: data.messageCounter,
+      id: id
+    }
+    return chatDTO;
+  }
+
 }
+
 
 export interface ChatDTO{
   chatname: string;
   messageCounter: number;
+  id?: string;
 }
 export interface MessageDTO{
   content: string;
-  timestamp: string;
+  timestamp: Date;
   userid: string;
+  id?: string;
 }

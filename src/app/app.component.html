@@ -5,10 +5,10 @@
 
 
   <p *ngFor="let chat of fireService.chats">
-    {{chat.data.chatname}}, messages: {{chat.data.messageCounter}}
+    {{chat.chatname}}, messages: {{chat.messageCounter}}
     <br>
     <button (click)="fireService.DeleteChat(chat.id)">Delete</button>
-    <button (click)="fireService.getMessagesFromChat(chat.id, chat.data.messageCounter)">Open Chat</button>
+    <button (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)">Open Chat</button>
     <br><br>
   </p>
 </div>
@@ -18,8 +18,8 @@
 
     <div *ngIf="fireService.messages != undefined">
       <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word">
-        <strong>{{message.data.timestamp | date:'hh:mm:ss dd/MM'}} from Jan:</strong><br>
-        {{message.data.content}}
+        <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from Jan:</strong><br>
+        {{message.content}}
         <br><br>
       </div>
     </div>
