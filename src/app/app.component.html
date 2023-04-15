@@ -1,8 +1,31 @@
+<mat-toolbar color="primary" style="display: flex">
+  <span >Chatz</span>
+  <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
+  <span>username_placeholder</span>
+  <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
+  <button mat-button [matMenuTriggerFor]="menu" style="font-size: 20px; font-weight: 500; line-height: 32px; font-family: Roboto, sans-serif; letter-spacing: .0125em;">
+    <mat-icon style="scale: 2">menu</mat-icon>
+  </button>
 
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item> <!--User is NOT logged in-->
+      <span>Log in</span>
+    </button>
+    <button mat-menu-item > <!--User is NOT logged in-->
+      <span>Register</span>
+    </button>
+    <button mat-menu-item > <!--User is logged in-->
+      <span>Dashboard</span>
+    </button>
+    <button mat-menu-item > <!--User is logged in-->
+      <span>Sign out</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
 
 
 <!-- Div for the chats -->
-<div style="width: 24%; float: left; margin: 10px; height: 97vh; overflow:auto">
+<div style="width: 24%; float: left; margin: 10px; height: 90vh; overflow:auto">
   <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2">
     <strong>Chat Name:</strong>
     <mat-form-field>
@@ -29,8 +52,8 @@
 
 <!-- Div for the open chat -->
 <div *ngIf="fireService.openChat != undefined"  style="width: 74%; float: right">
-  <p style="font-size: 24px; margin: auto; padding: 5px">{{fireService.openChat.chatname}}</p>
-  <mat-card id="ChatBox" style="padding: 25px; height: 80vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
+  <p style="font-size: 30px; margin: auto; padding: 5px; margin: 5px">{{fireService.openChat.chatname}}</p>
+  <mat-card id="ChatBox" style="padding: 25px; height: 74vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
     <div *ngIf="fireService.messages.length == 0" style="margin: auto">
       <p style="font-size: 24px; margin: auto">This chat appears empty... 😢</p>
       <br>
@@ -53,7 +76,6 @@
     </mat-form-field>
   </div>
 </div>
-
 
 
 

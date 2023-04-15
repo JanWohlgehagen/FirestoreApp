@@ -26,6 +26,7 @@ export class FireService {
   async getChats() {
     this.firestore
       .collection('Chats')
+      .orderBy('messageCounter', 'desc')
       .onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change =>{
           let chat: ChatDTO = this.convertJsonToChatDTO(change.doc.id, change.doc.data());
@@ -39,7 +40,6 @@ export class FireService {
           if (change.type=="removed"){
             this.chats = this.chats.filter(m => m.id != chat.id);
           }
-          this.chats.sort((a,b) => b.messageCounter - a.messageCounter)
         })
       })
   }
@@ -51,6 +51,7 @@ export class FireService {
     this.messages = [];
     this.firestore
       .collection(`/Chats/${id}/messages`)
+      .orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change =>{
           let message: MessageDTO = this.convertJsonToMessageDTO(change.doc.id, change.doc.data());
@@ -64,7 +65,6 @@ export class FireService {
           if (change.type=="removed"){
             this.messages = this.messages.filter(m => m.id != message.id);
           }
-          this.messages.sort((a,b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
         })
       })
   }
