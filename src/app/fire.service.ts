@@ -14,7 +14,7 @@ export class FireService {
   firestore: firebase.firestore.Firestore;
   messages: any[] = [];
   chats: any [] = [];
-  openChatId: any;
+  openChat: any;
   messageCounter: any;
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
@@ -33,7 +33,7 @@ export class FireService {
             this.chats.push(chat);
           }
           if (change.type=="modified"){
-            const index = this.chats.findIndex(document => document.id.toString() == this.openChatId.toString());
+            const index = this.chats.findIndex(document => document.id.toString() == change.doc.id.toString());
             this.chats[index] = chat
           }
           if (change.type=="removed"){
@@ -45,7 +45,7 @@ export class FireService {
   }
 
   getMessagesFromChat(id, messagecounter) {
-    this.openChatId = id;
+    this.openChat = this.chats.find(chat => chat.id == id);
     this.messageCounter = messagecounter;
 
     this.messages = [];
@@ -80,6 +80,9 @@ export class FireService {
   }
 
   async sendMessage(content: any) {
+    if (this.openChat.id == undefined)
+      return
+
     let message : MessageDTO = {
       content: content,
       timestamp: new Date(),
@@ -87,10 +90,10 @@ export class FireService {
     }
     var element = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
 
-    await this.firestore.collection(`Chats/${this.openChatId}/messages`)
+    await this.firestore.collection(`Chats/${this.openChat.id}/messages`)
       .add(message)
 
-    await this.firestore.collection('Chats/').doc(this.openChatId)
+    await this.firestore.collection('Chats/').doc(this.openChat.id)
       .update({
        messageCounter: this.messageCounter+1
       }).then( ()=>{
@@ -103,9 +106,27 @@ export class FireService {
 
   DeleteChat(chat_id: any) {
     this.firestore.collection('Chats').doc(chat_id).delete()
-    if (chat_id === this.openChatId) {
-      this.openChatId = undefined;
+    if (chat_id === this.openChat.id) {
+      this.openChat = undefined;
     }
+  }
+
+  async clearOpenChat(chat_id) {
+    var snapshot = await this.firestore.collection(`Chats/${chat_id}/messages`)
+      .where('timestamp', '<', new Date).get();
+
+    // Delete documents in a batch
+    const batch = this.firestore.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    await this.firestore.collection('Chats/').doc(this.openChat.id)
+      .update({
+        messageCounter: 0
+      });
+
   }
 
   convertJsonToMessageDTO(id: any, data: any): MessageDTO{
@@ -126,7 +147,6 @@ export class FireService {
     }
     return chatDTO;
   }
-
 }
 
 

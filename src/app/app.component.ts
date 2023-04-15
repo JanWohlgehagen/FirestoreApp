@@ -12,6 +12,7 @@ export class AppComponent {
   content: any;
   chatname: any;
 
+
   constructor(public fireService: FireService) {
 
   }

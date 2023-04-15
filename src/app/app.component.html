@@ -18,6 +18,7 @@
     <br>
     <br>
     <button mat-raised-button color="primary" (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)" >Open Chat</button>
+    <button *ngIf="chat == fireService.openChat" mat-raised-button color="primary" (click)="fireService.clearOpenChat(chat.id)" style="margin-left: 10px">Clear</button>
     <button mat-raised-button color="warn" (click)="fireService.DeleteChat(chat.id)" style="float: right">Delete</button>
 
     <br><br>
@@ -27,8 +28,8 @@
 
 
 <!-- Div for the open chat -->
-<div *ngIf="fireService.openChatId != undefined"  style="width: 74%; float: right">
-  <p style="font-size: 24px; margin: auto; padding: 5px">Placeholder</p>
+<div *ngIf="fireService.openChat != undefined"  style="width: 74%; float: right">
+  <p style="font-size: 24px; margin: auto; padding: 5px">{{fireService.openChat.chatname}}</p>
   <mat-card id="ChatBox" style="padding: 25px; height: 80vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
     <div *ngIf="fireService.messages.length == 0" style="margin: auto">
       <p style="font-size: 24px; margin: auto">This chat appears empty... 😢</p>
@@ -45,7 +46,7 @@
     </div>
   </mat-card>
 
-  <div *ngIf="fireService.openChatId != undefined" style="position: sticky; bottom: 0;">
+  <div *ngIf="fireService.openChat != undefined" style="position: sticky; bottom: 0;">
     <mat-form-field style="width: 100%;">
       <textarea matInput [(ngModel)]="content" style="float: left; overflow: hidden"></textarea>
       <button mat-raised-button color="primary" style="float: right" (click)="fireService.sendMessage(content)">Send Message</button>
