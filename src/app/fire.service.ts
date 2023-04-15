@@ -36,6 +36,7 @@ export class FireService {
           if (change.type=="modified"){
             const index = this.chats.findIndex(document => document.id.toString() == change.doc.id.toString());
             this.chats[index] = chat
+            console.log(this.openChat)
           }
           if (change.type=="removed"){
             this.chats = this.chats.filter(m => m.id != chat.id);
@@ -67,6 +68,7 @@ export class FireService {
           }
         })
       })
+    console.log(this.openChat)
   }
 
   CreateNewChat(chatname: any) {
@@ -88,7 +90,8 @@ export class FireService {
       timestamp: new Date(),
       userid: '2'
     }
-    var element = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
+    var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
+    var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
 
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`)
       .add(message)
@@ -100,14 +103,18 @@ export class FireService {
       this.messageCounter +=1
     })
     // @ts-ignore
-    element.scrollTop = element.scrollHeight; //scroll to bottom of the chat box
+    ChatBoxElement.scrollTop = ChatBoxElement.scrollHeight; //scroll to bottom of the chat box
+    // @ts-ignore
+    ChatInputElement.value = '';
 
   }
 
   DeleteChat(chat_id: any) {
     this.firestore.collection('Chats').doc(chat_id).delete()
-    if (chat_id === this.openChat.id) {
-      this.openChat = undefined;
+    if(this.openChat) {
+      if (chat_id === this.openChat.id) {
+        this.openChat = undefined;
+      }
     }
   }
 

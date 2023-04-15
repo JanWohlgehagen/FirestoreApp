@@ -26,12 +26,12 @@
 
 <!-- Div for the chats -->
 <div style="width: 24%; float: left; margin: 10px; height: 90vh; overflow:auto">
-  <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2">
-    <strong>Chat Name:</strong>
+  <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2; display: flex">
     <mat-form-field>
-        <input matInput [(ngModel)]="chatname">
+      <mat-label>Chat name</mat-label>
+      <input matInput [(ngModel)]="chatname" style="width: 100%">
     </mat-form-field>
-    <button mat-raised-button (click)="fireService.CreateNewChat(chatname)" style="margin-left: 15px"> + </button>
+    <button mat-raised-button (click)="fireService.CreateNewChat(chatname)" style="margin:auto">+</button>
     <br>
   </div>
   <br>
@@ -41,7 +41,9 @@
     <br>
     <br>
     <button mat-raised-button color="primary" (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)" >Open Chat</button>
-    <button *ngIf="chat == fireService.openChat" mat-raised-button color="primary" (click)="fireService.clearOpenChat(chat.id)" style="margin-left: 10px">Clear</button>
+    <span *ngIf="fireService.openChat">
+      <button *ngIf="chat.id== fireService.openChat.id" mat-raised-button color="primary" (click)="fireService.clearOpenChat(chat.id)" style="margin-left: 10px">Clear</button>
+    </span>
     <button mat-raised-button color="warn" (click)="fireService.DeleteChat(chat.id)" style="float: right">Delete</button>
 
     <br><br>
@@ -71,8 +73,7 @@
 
   <div *ngIf="fireService.openChat != undefined" style="position: sticky; bottom: 0;">
     <mat-form-field style="width: 100%;">
-      <textarea matInput [(ngModel)]="content" style="float: left; overflow: hidden"></textarea>
-      <button mat-raised-button color="primary" style="float: right" (click)="fireService.sendMessage(content)">Send Message</button>
+      <textarea matInput id="ChatInput" [(ngModel)]="content" style="overflow: hidden; height: 8vh" (keydown.enter)="fireService.sendMessage(content)"></textarea>
     </mat-form-field>
   </div>
 </div>
