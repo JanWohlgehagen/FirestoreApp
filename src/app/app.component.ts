@@ -11,10 +11,14 @@ import {FireService} from "./fire.service";
 export class AppComponent {
   content: any;
   chatname: any;
+  email: string = '';
+  password: string = '';
 
 
   constructor(public fireService: FireService) {
 
   }
+
+
 
 }

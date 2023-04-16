@@ -1,31 +1,46 @@
 <mat-toolbar color="primary" style="display: flex">
   <span >Chatz</span>
   <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
-  <span>username_placeholder</span>
+  <span *ngIf="fireService.auth.currentUser!=null">logged in as: {{fireService.auth.currentUser.email}}</span>
   <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
-  <button mat-button [matMenuTriggerFor]="menu" style="font-size: 20px; font-weight: 500; line-height: 32px; font-family: Roboto, sans-serif; letter-spacing: .0125em;">
+  <button mat-button *ngIf="fireService.auth.currentUser!=null" [matMenuTriggerFor]="menu" style="font-size: 20px; font-weight: 500; line-height: 32px; font-family: Roboto, sans-serif; letter-spacing: .0125em;">
     <mat-icon style="scale: 2">menu</mat-icon>
   </button>
 
   <mat-menu #menu="matMenu">
-    <button mat-menu-item> <!--User is NOT logged in-->
-      <span>Log in</span>
-    </button>
-    <button mat-menu-item > <!--User is NOT logged in-->
-      <span>Register</span>
-    </button>
-    <button mat-menu-item > <!--User is logged in-->
-      <span>Dashboard</span>
-    </button>
-    <button mat-menu-item > <!--User is logged in-->
-      <span>Sign out</span>
+    <button mat-menu-item *ngIf="fireService.auth.currentUser!=null" (click)="fireService.signOut()"> <!--User is logged in-->
+      <span>Log out</span>
     </button>
   </mat-menu>
 </mat-toolbar>
 
+<!-- Div for logging in & registering -->
+<div *ngIf="fireService.auth.currentUser==null" style="margin: 5% auto auto; width: 40%; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5)">
+  <mat-card style=" padding: 5%; background-color: whitesmoke">
+    <mat-card-title style="text-align: center">
+      Log in
+    </mat-card-title>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput [(ngModel)]="email" type="email">
+    </mat-form-field>
+    <br>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput [(ngModel)]="password" [type]="'password'">
+    </mat-form-field>
+
+    <button color="primary" mat-raised-button (click)="fireService.signIn(email, password)">Log in</button>
+    <button mat-raised-button style="margin-top: 10px;" (click)="fireService.register(email, password)">Register</button>
+
+  </mat-card>
+
+</div>
 
 <!-- Div for the chats -->
-<div style="width: 24%; float: left; margin: 10px; height: 90vh; overflow:auto">
+<div *ngIf="fireService.auth.currentUser!=null" style="width: 24%; float: left; margin: 10px; height: 90vh; overflow:auto">
   <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2; display: flex">
     <mat-form-field>
       <mat-label>Chat name</mat-label>
@@ -53,7 +68,7 @@
 
 
 <!-- Div for the open chat -->
-<div *ngIf="fireService.openChat != undefined"  style="width: 74%; float: right">
+<div *ngIf="fireService.openChat != undefined && fireService.auth.currentUser!=null"  style="width: 74%; float: right">
   <p style="font-size: 30px; margin: auto; padding: 5px; margin: 5px">{{fireService.openChat.chatname}}</p>
   <mat-card id="ChatBox" style="padding: 25px; height: 74vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
     <div *ngIf="fireService.messages.length == 0" style="margin: auto">
