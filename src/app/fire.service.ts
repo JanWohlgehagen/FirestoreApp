@@ -6,6 +6,7 @@ import 'firebase/compat/auth';
 import * as config from '../../firebaseconfig.js';
 import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 
 @Injectable({

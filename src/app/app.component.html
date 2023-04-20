@@ -107,12 +107,24 @@
 
     <div *ngIf="fireService.messages != undefined">
       <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word;">
-        <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from {{message.user.name}}:</strong><br>
-        {{message.content}}
-        <button mat-mini-fab color="warn" *ngIf="message.user.id == fireService.auth.currentUser.uid" (click)="fireService.deleteMessage(message.id)" style="float: right; scale: 0.8">
-          <mat-icon>delete</mat-icon>
-        </button>
-        <br><br>
+        <div class="messages">
+          <div style="float: left;">
+            <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from {{message.user.name}}:</strong><br>
+            {{message.content}}
+          </div>
+          <div style="float: right;">
+            <button mat-mini-fab color="primary" [cdkCopyToClipboard]="message.content" (click)="sendCopyToClipboardSnackbar()" style="float: right; scale: 0.8;">
+              <mat-icon>file_copy</mat-icon>
+            </button>
+            <button mat-mini-fab color="primary" style="float: right; scale: 0.8;">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-mini-fab color="warn" *ngIf="message.user.id == fireService.auth.currentUser.uid" (click)="fireService.deleteMessage(message.id)" style="float: right; scale: 0.8;">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <br><br>
+        </div>
       </div>
     </div>
   </mat-card>

@@ -13,25 +13,29 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatIcon, MatIconModule} from "@angular/material/icon";
 import {MatChipsModule} from "@angular/material/chips";
+import {ClipboardModule} from "@angular/cdk/clipboard";
+import {MatSnackBar, MatSnackBarModule} from "@angular/material/snack-bar";
 
 @NgModule({
   declarations: [
     AppComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        FormsModule,
-        MatCardModule,
-        BrowserAnimationsModule,
-        MatInputModule,
-        MatButtonModule,
-        MatListModule,
-        MatMenuModule,
-        MatToolbarModule,
-        MatIconModule,
-        MatChipsModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    MatCardModule,
+    BrowserAnimationsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatListModule,
+    MatMenuModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatChipsModule,
+    MatSnackBarModule,
+    ClipboardModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })
