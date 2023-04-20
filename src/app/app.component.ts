@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import {FireService} from "./fire.service";
+import {COMMA, ENTER} from "@angular/cdk/keycodes";
+import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 
 
 @Component({
@@ -13,12 +15,13 @@ export class AppComponent {
   chatname: any;
   email: string = '';
   password: string = '';
+  name: string = '';
+
 
 
   constructor(public fireService: FireService) {
 
   }
 
-
-
 }
+

@@ -12,24 +12,26 @@ import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatIcon, MatIconModule} from "@angular/material/icon";
+import {MatChipsModule} from "@angular/material/chips";
 
 @NgModule({
   declarations: [
     AppComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    MatCardModule,
-    BrowserAnimationsModule,
-    MatInputModule,
-    MatButtonModule,
-    MatListModule,
-    MatMenuModule,
-    MatToolbarModule,
-    MatIconModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        FormsModule,
+        MatCardModule,
+        BrowserAnimationsModule,
+        MatInputModule,
+        MatButtonModule,
+        MatListModule,
+        MatMenuModule,
+        MatToolbarModule,
+        MatIconModule,
+        MatChipsModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

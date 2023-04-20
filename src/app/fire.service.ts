@@ -4,6 +4,8 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 
 import * as config from '../../firebaseconfig.js';
+import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
+import {COMMA, ENTER} from "@angular/cdk/keycodes";
 
 
 @Injectable({
@@ -14,11 +16,16 @@ export class FireService {
   firebaseApplication;
   firestore: firebase.firestore.Firestore;
   auth: firebase.auth.Auth;
+  chatParticipants: Participant[] = [];
+  addOnBlur = true;
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   messages: any[] = [];
   chats: any [] = [];
+  user: UserDTO | any;
   openChat: any;
   messageCounter: any;
+
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
@@ -26,26 +33,42 @@ export class FireService {
     this.auth.onAuthStateChanged((user) =>{
       if (user) {
         this.getChats();
+        this.setUser();
       }
     })
   }
 
-  register(email: string, password: string){
-    this.auth.createUserWithEmailAndPassword(email, password)
+  async register(email: string, password: string, name: string){
+    await this.auth.createUserWithEmailAndPassword(email, password).then(() => {
+      let user : UserDTO = {
+        email: email,
+        name: name,
+        id: this.auth.currentUser?.uid+''
+      }
+
+      this.firestore.collection(`Users`)
+        .add(user)
+    })
   }
 
-  signIn(email: string, password: string){
-    this.auth.signInWithEmailAndPassword(email, password)
+  async signIn(email: string, password: string){
+    await this.auth.signInWithEmailAndPassword(email, password).then(()=> {
+
+    })
   }
 
   signOut(){
     this.auth.signOut()
+    this.user = undefined;
+    this.chats = [];
+    this.openChat = undefined;
   }
 
 
   async getChats() {
     this.firestore
       .collection('Chats')
+      .where('owners', 'array-contains', this.auth.currentUser?.email)
       .orderBy('messageCounter', 'desc')
       .onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change =>{
@@ -56,7 +79,6 @@ export class FireService {
           if (change.type=="modified"){
             const index = this.chats.findIndex(document => document.id.toString() == change.doc.id.toString());
             this.chats[index] = chat
-            console.log(this.openChat)
           }
           if (change.type=="removed"){
             this.chats = this.chats.filter(m => m.id != chat.id);
@@ -88,18 +110,28 @@ export class FireService {
           }
         })
       })
-    console.log(this.openChat)
   }
 
   CreateNewChat(chatname: any) {
+    let tempArray: string [] = [];
+
+    this.chatParticipants.forEach(participant =>{
+      tempArray.push(participant.email);
+    })
+
+    tempArray.push(this.auth.currentUser?.email+"")
+
+
     let chat : ChatDTO = {
       chatname: chatname,
-      messageCounter: 0
+      messageCounter: 0,
+      owners: tempArray
     }
 
     this.firestore.collection(`Chats`)
       .add(chat)
   }
+
 
   async sendMessage(content: any) {
     if (this.openChat.id == undefined)
@@ -108,10 +140,13 @@ export class FireService {
     let message : MessageDTO = {
       content: content,
       timestamp: new Date(),
-      userid: '2'
+      user: this.user
     }
     var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
     var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
+
+    console.log(this.openChat.id)
+    console.log(message)
 
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`)
       .add(message)
@@ -122,11 +157,15 @@ export class FireService {
       }).then( ()=>{
       this.messageCounter +=1
     })
+
     // @ts-ignore
-    ChatBoxElement.scrollTop = ChatBoxElement.scrollHeight; //scroll to bottom of the chat box
+    ChatBoxElement.scroll({top: 100, left: 0, behavior: 'smooth'})
     // @ts-ignore
     ChatInputElement.value = '';
+  }
 
+  async deleteMessage(id) {
+    await this.firestore.collection(`Chats/${this.openChat.id}/messages`).doc(id).delete()
   }
 
   DeleteChat(chat_id: any) {
@@ -160,7 +199,7 @@ export class FireService {
     const messageDTO: MessageDTO = {
       content: data.content,
       timestamp: data.timestamp.toDate(),
-      userid: data.user,
+      user: data.user,
       id: id
     }
     return messageDTO;
@@ -170,9 +209,59 @@ export class FireService {
     const chatDTO: ChatDTO = {
       chatname: data.chatname,
       messageCounter: data.messageCounter,
+      owners: [],
       id: id
     }
     return chatDTO;
+  }
+
+  removeParticipant(participant: Participant) {
+    const index = this.chatParticipants.indexOf(participant);
+
+    if (index >= 0) {
+      this.chatParticipants.splice(index, 1);
+    }
+  }
+
+  editParticipant(participant: Participant, event: MatChipEditedEvent) {
+
+    const value = event.value.trim();
+
+    // Remove fruit if it no longer has a name
+    if (!value) {
+      this.removeParticipant(participant);
+      return;
+    }
+
+    // Edit existing fruit
+    const index = this.chatParticipants.indexOf(participant);
+    if (index >= 0) {
+      this.chatParticipants[index].email = value;
+    }
+  }
+
+  addParticipant(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+
+    // Add our fruit
+    if (value) {
+      this.chatParticipants.push({email: value});
+    }
+
+    // Clear the input value
+    event.chipInput!.clear();
+  }
+
+  async setUser() {
+    var ref = await this.firestore.collection('Users')
+      .where('id', '==', this.auth.currentUser?.uid).get()
+    var data = ref.docs[0].data()
+
+    this.user = {
+      id: data['id'],
+      name: data['name'],
+      email: data['email']
+    }
   }
 }
 
@@ -180,11 +269,22 @@ export class FireService {
 export interface ChatDTO{
   chatname: string;
   messageCounter: number;
+  owners: string[];
   id?: string;
 }
 export interface MessageDTO{
   content: string;
   timestamp: Date;
-  userid: string;
+  user: UserDTO;
   id?: string;
+}
+
+export interface UserDTO {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Participant {
+  email: string;
 }

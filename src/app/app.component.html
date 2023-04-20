@@ -22,6 +22,12 @@
     </mat-card-title>
 
     <mat-form-field appearance="fill">
+      <mat-label>Username</mat-label>
+      <input matInput [(ngModel)]="name" type="username">
+    </mat-form-field>
+    <br>
+
+    <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
       <input matInput [(ngModel)]="email" type="email">
     </mat-form-field>
@@ -33,7 +39,7 @@
     </mat-form-field>
 
     <button color="primary" mat-raised-button (click)="fireService.signIn(email, password)">Log in</button>
-    <button mat-raised-button style="margin-top: 10px;" (click)="fireService.register(email, password)">Register</button>
+    <button mat-raised-button style="margin-top: 10px;" (click)="fireService.register(email, password, name)">Register</button>
 
   </mat-card>
 
@@ -41,12 +47,34 @@
 
 <!-- Div for the chats -->
 <div *ngIf="fireService.auth.currentUser!=null" style="width: 24%; float: left; margin: 10px; height: 90vh; overflow:auto">
-  <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2; display: flex">
-    <mat-form-field>
+  <div style="position:sticky; top: 0; background-color: whitesmoke; padding-top: 10px; z-index: 2;">
+    <mat-form-field appearance="fill" style="width: 100%;">
       <mat-label>Chat name</mat-label>
-      <input matInput [(ngModel)]="chatname" style="width: 100%">
+      <input matInput [(ngModel)]="chatname"  style="width: 100%">
     </mat-form-field>
-    <button mat-raised-button (click)="fireService.CreateNewChat(chatname)" style="margin:auto">+</button>
+
+    <!-- form for participant chips -->
+    <mat-form-field appearance="fill" style="width: 100%;">
+      <mat-label>Participants</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Enter fruits">
+        <mat-chip-row *ngFor="let participant of fireService.chatParticipants"
+                      (removed)="fireService.removeParticipant(participant)"
+                      [editable]="true"
+                      (edited)="fireService.editParticipant(participant, $event)"
+                      [aria-description]="'press enter to edit ' + participant.email">
+          {{participant.email}}
+          <button matChipRemove [attr.aria-label]="'remove ' + participant.email">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+        <input placeholder="Add participant..."
+               [matChipInputFor]="chipGrid"
+               [matChipInputSeparatorKeyCodes]="fireService.separatorKeysCodes"
+               [matChipInputAddOnBlur]="fireService.addOnBlur"
+               (matChipInputTokenEnd)="fireService.addParticipant($event)"/>
+      </mat-chip-grid>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="fireService.CreateNewChat(chatname)" style="display: flex; margin:auto">+</button>
     <br>
   </div>
   <br>
@@ -79,8 +107,11 @@
 
     <div *ngIf="fireService.messages != undefined">
       <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word;">
-        <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from Jan:</strong><br>
+        <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from {{message.user.name}}:</strong><br>
         {{message.content}}
+        <button mat-mini-fab color="warn" *ngIf="message.user.id == fireService.auth.currentUser.uid" (click)="fireService.deleteMessage(message.id)" style="float: right; scale: 0.8">
+          <mat-icon>delete</mat-icon>
+        </button>
         <br><br>
       </div>
     </div>
