@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 import {FireService} from "./fire.service";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 
@@ -17,6 +15,7 @@ export class AppComponent {
   email: string = '';
   password: string = '';
   name: string = '';
+  isVisible: boolean = false;
 
 
 

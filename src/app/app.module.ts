@@ -15,6 +15,7 @@ import {MatIcon, MatIconModule} from "@angular/material/icon";
 import {MatChipsModule} from "@angular/material/chips";
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import {MatSnackBar, MatSnackBarModule} from "@angular/material/snack-bar";
+import {HttpClientModule} from "@angular/common/http";
 
 @NgModule({
   declarations: [

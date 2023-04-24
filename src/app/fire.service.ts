@@ -8,7 +8,6 @@ import * as config from '../../firebaseconfig.js';
 import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -27,6 +26,9 @@ export class FireService {
   user: UserDTO | any;
   openChat: any;
   messageCounter: any;
+  placeholderAvatarURL = 'https://e7.pngegg.com/pngimages/59/644/png-clipart-silhouette-avatar-line-art-silhouette-animals-vexel.png';
+  UserAvatar: string = this.placeholderAvatarURL;
+
 
 
   constructor() {
@@ -38,6 +40,7 @@ export class FireService {
       if (user) {
         this.getChats();
         this.setUser();
+        this.getUserAvatar();
       }
     })
   }
@@ -64,11 +67,11 @@ export class FireService {
     this.user = undefined;
     this.chats = [];
     this.openChat = undefined;
+    this.UserAvatar = this.placeholderAvatarURL;
   }
 
 
   async getChats() {
-    console.log(this.auth.currentUser?.uid)
     this.firestore
       .collection('Chats')
       .where('owners', 'array-contains', this.auth.currentUser?.email)
@@ -111,9 +114,39 @@ export class FireService {
           if (change.type=="removed"){
             this.messages = this.messages.filter(m => m.id != message.id);
           }
-        })
+        });
+        this.fetchAvatars();
       })
+
   }
+
+  private fetchAvatars() {
+    let map : Pair [] = []
+
+     this.messages.forEach(async (m) => {
+       const found = map.some(el => el.key === m.user.id);
+       if (!found){
+         await this.storage.ref('avatars').child(m.user.id).getDownloadURL().then( (res) =>{
+           let pair : Pair = {
+             key: m.user.id,
+             value: res
+           }
+           map.push(pair)
+         }).catch(() => {
+           let pair : Pair = {
+             key: m.user.id,
+             value: this.placeholderAvatarURL
+           }
+           map.push(pair)
+         })
+       }
+       var pair  = map.find(p => p.key == m.user.id)
+       if (pair){
+         m.avatarURL = pair.value
+       }
+    })
+  }
+
 
   CreateNewChat(chatname: any) {
     let tempArray: string [] = [];
@@ -147,9 +180,6 @@ export class FireService {
     }
     var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
     var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
-
-    console.log(this.openChat.id)
-    console.log(message)
 
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`)
       .add(message)
@@ -198,7 +228,7 @@ export class FireService {
 
   }
 
-  convertJsonToMessageDTO(id: any, data: any): MessageDTO{
+  convertJsonToMessageDTO(id: any, data: any): MessageDTO {
     const messageDTO: MessageDTO = {
       content: data.content,
       timestamp: data.timestamp.toDate(),
@@ -215,6 +245,7 @@ export class FireService {
       owners: [],
       id: id
     }
+
     return chatDTO;
   }
 
@@ -227,16 +258,15 @@ export class FireService {
   }
 
   editParticipant(participant: Participant, event: MatChipEditedEvent) {
-
     const value = event.value.trim();
 
-    // Remove fruit if it no longer has a name
+    // Remove participant if it no longer has a name
     if (!value) {
       this.removeParticipant(participant);
       return;
     }
 
-    // Edit existing fruit
+    // Edit existing participant
     const index = this.chatParticipants.indexOf(participant);
     if (index >= 0) {
       this.chatParticipants[index].email = value;
@@ -246,7 +276,7 @@ export class FireService {
   addParticipant(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
 
-    // Add our fruit
+    // Add our participant
     if (value) {
       this.chatParticipants.push({email: value});
     }
@@ -266,6 +296,19 @@ export class FireService {
       email: data['email']
     }
   }
+
+  async getUserAvatar () {
+    this.UserAvatar = await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '').getDownloadURL()
+  }
+
+  async updateUserAvatar ($event) {
+    const img = $event.target.files[0];
+    const uploadTast = await this.storage
+      .ref('avatars')
+      .child(this.auth.currentUser?.uid+'')
+      .put(img)
+    this.UserAvatar = await uploadTast.ref.getDownloadURL()
+  }
 }
 
 
@@ -279,6 +322,7 @@ export interface MessageDTO{
   content: string;
   timestamp: Date;
   user: UserDTO;
+  avatarURL?: string;
   id?: string;
 }
 
@@ -290,4 +334,9 @@ export interface UserDTO {
 
 export interface Participant {
   email: string;
+}
+
+export interface Pair {
+  key: string;
+  value: string;
 }

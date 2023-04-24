@@ -2,6 +2,8 @@
   <span >Chatz</span>
   <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
   <span *ngIf="fireService.auth.currentUser!=null">logged in as: {{fireService.auth.currentUser.email}}</span>
+  <img (click)="img_upload.click()" src="{{fireService.UserAvatar}}" style="max-height: 60px; margin-left: 10px; border-radius: 15px">
+  <input #img_upload hidden type="file" (change)="fireService.updateUserAvatar($event)">
   <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
   <button mat-button *ngIf="fireService.auth.currentUser!=null" [matMenuTriggerFor]="menu" style="font-size: 20px; font-weight: 500; line-height: 32px; font-family: Roboto, sans-serif; letter-spacing: .0125em;">
     <mat-icon style="scale: 2">menu</mat-icon>
@@ -107,19 +109,28 @@
 
     <div *ngIf="fireService.messages != undefined">
       <div  *ngFor="let message of fireService.messages" style="word-wrap: break-word;">
-        <div class="messages">
-          <div style="float: left;">
+        <div class="messages" style="display: flex;">
+          <div *ngIf="message.user.id == fireService.auth.currentUser.uid"  style="float: left; margin-right: 5px">
+            <img src="{{fireService.UserAvatar}}" style="max-height: 35px; min-width: 35px; border-radius:25px;">
+          </div>
+          <div *ngIf="message.user.id != fireService.auth.currentUser.uid"  style="float: left; margin-right: 5px">
+            <img src="{{message.avatarURL}}" style="max-height: 35px; min-width: 35px; border-radius:25px;">
+          </div>
+
+          <div style="float: left">
             <strong>{{message.timestamp| date:'dd/MM H:mm:ss'}} from {{message.user.name}}:</strong><br>
             {{message.content}}
           </div>
-          <div style="float: right;">
-            <button mat-mini-fab color="primary" [cdkCopyToClipboard]="message.content" (click)="sendCopyToClipboardSnackbar()" style="float: right; scale: 0.8;">
+
+          <span style="flex: 1 1 auto"></span> <!-- spacer for header -->
+          <div style="float: right; min-width: 8vw">
+            <button mat-mini-fab color="primary"  [cdkCopyToClipboard]="message.content" (click)="sendCopyToClipboardSnackbar()" style="float: right; scale: 0.8;">
               <mat-icon>file_copy</mat-icon>
             </button>
-            <button mat-mini-fab color="primary" style="float: right; scale: 0.8;">
+            <button mat-mini-fab color="primary"  *ngIf="message.user.id == fireService.auth.currentUser.uid" style="float: right; scale: 0.8;">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-mini-fab color="warn" *ngIf="message.user.id == fireService.auth.currentUser.uid" (click)="fireService.deleteMessage(message.id)" style="float: right; scale: 0.8;">
+            <button mat-mini-fab color="warn"  *ngIf="message.user.id == fireService.auth.currentUser.uid" (click)="fireService.deleteMessage(message.id)" style="float: right; scale: 0.8;">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
