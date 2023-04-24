@@ -2,11 +2,11 @@ import {Injectable} from '@angular/core';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
+import 'firebase/compat/storage';
 
 import * as config from '../../firebaseconfig.js';
 import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {MatSnackBar} from "@angular/material/snack-bar";
 
 
 @Injectable({
@@ -17,20 +17,23 @@ export class FireService {
   firebaseApplication;
   firestore: firebase.firestore.Firestore;
   auth: firebase.auth.Auth;
+  storage: firebase.storage.Storage;
+
   chatParticipants: Participant[] = [];
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
   messages: any[] = [];
   chats: any [] = [];
   user: UserDTO | any;
   openChat: any;
   messageCounter: any;
 
+
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
     this.auth = firebase.auth();
+    this.storage = firebase.storage();
     this.auth.onAuthStateChanged((user) =>{
       if (user) {
         this.getChats();
@@ -53,9 +56,7 @@ export class FireService {
   }
 
   async signIn(email: string, password: string){
-    await this.auth.signInWithEmailAndPassword(email, password).then(()=> {
-
-    })
+    await this.auth.signInWithEmailAndPassword(email, password)
   }
 
   signOut(){
@@ -67,6 +68,7 @@ export class FireService {
 
 
   async getChats() {
+    console.log(this.auth.currentUser?.uid)
     this.firestore
       .collection('Chats')
       .where('owners', 'array-contains', this.auth.currentUser?.email)
