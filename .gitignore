@@ -3,13 +3,13 @@
 firebaseconfig.js
 
 # Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+frontend/dist
+frontend/tmp
+frontend/out-tsc
+frontend/bazel-out
 
 # Node
-/node_modules
+frontend/node_modules
 npm-debug.log
 yarn-error.log
 
@@ -31,7 +31,7 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
+frontend/.angular/cache
 .sass-cache/
 /connect.lock
 /coverage
