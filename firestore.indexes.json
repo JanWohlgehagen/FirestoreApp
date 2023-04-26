@@ -1,0 +1,47 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "Chats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "owners",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "messageCounter",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Chats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "users",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Chats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "users",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
