@@ -8,7 +8,7 @@ import 'firebase/compat/functions';
 import * as config from '../../firebaseconfig.js';
 import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import axios from 'axios';
+import axios from "axios";
 
 @Injectable({
   providedIn: 'root'
@@ -107,6 +107,7 @@ export class FireService {
           if (change.type=="modified"){
             const index = this.chats.findIndex(document => document.id.toString() == change.doc.id.toString());
             this.chats[index] = chat
+            this.openChat.messageCounter = chat.messageCounter
           }
           if (change.type=="removed"){
             this.chats = this.chats.filter(m => m.id != chat.id);
@@ -211,15 +212,15 @@ export class FireService {
 
 
     axios.post(this.baseAxiosURL+'Message', message).then(success => {
-
+      // @ts-ignore
+      ChatInputElement.value = '';
     }).catch(err => {
       console.log(err)
     })
 
     // @ts-ignore
     ChatBoxElement.scroll({top: 100, left: 0, behavior: 'smooth'})
-    // @ts-ignore
-    ChatInputElement.value = '';
+
   }
 
   async deleteMessage(id) {
