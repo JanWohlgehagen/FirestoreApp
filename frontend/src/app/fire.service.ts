@@ -3,10 +3,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import 'firebase/compat/storage';
+import 'firebase/compat/functions';
 
 import * as config from '../../firebaseconfig.js';
 import {MatChipEditedEvent, MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
+import axios from 'axios';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +19,8 @@ export class FireService {
   firestore: firebase.firestore.Firestore;
   auth: firebase.auth.Auth;
   storage: firebase.storage.Storage;
+  functions: firebase.functions.Functions;
+
 
   chatParticipants: Participant[] = [];
   addOnBlur = true;
@@ -28,14 +32,21 @@ export class FireService {
   messageCounter: any;
   placeholderAvatarURL = 'https://e7.pngegg.com/pngimages/59/644/png-clipart-silhouette-avatar-line-art-silhouette-animals-vexel.png';
   UserAvatar: string = this.placeholderAvatarURL;
-
-
+  baseAxiosURL: string = 'http://127.0.0.1:5001/fullstack2023-a8967/us-central1/api/'
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
     this.auth = firebase.auth();
     this.storage = firebase.storage();
+    this.functions = firebase.functions();
+
+    this.firestore.useEmulator('localhost', 8081)
+    this.auth.useEmulator('http://localhost:9099')
+    this.storage.useEmulator('localhost', 9199)
+    this.functions.useEmulator('localhost', 5001)
+
+
     this.auth.onAuthStateChanged((user) =>{
       if (user) {
         this.getChats();
@@ -46,16 +57,28 @@ export class FireService {
   }
 
   async register(email: string, password: string, name: string){
-    await this.auth.createUserWithEmailAndPassword(email, password).then(() => {
-      let user : UserDTO = {
-        email: email,
-        name: name,
-        id: this.auth.currentUser?.uid+''
-      }
-
-      this.firestore.collection(`Users`)
-        .add(user)
-    })
+    await this.auth.createUserWithEmailAndPassword(email, password)
+      .then((result) => {
+        if (result.user) {
+          return result.user.updateProfile({
+            displayName: name
+          }).then(() => {
+            let user : UserDTO = {
+              email: email,
+              name: this.auth.currentUser?.displayName+'',
+              id: this.auth.currentUser?.uid+''
+            }
+            console.log(user)
+            axios.post(this.baseAxiosURL+'CreateUser', user).then(success => {
+              console.log(success)
+            }).catch(err => {
+              console.log(err)
+            })
+          })
+        } else return
+      }).catch(function(error) {
+      console.log(error);
+    });
   }
 
   async signIn(email: string, password: string){
@@ -126,19 +149,19 @@ export class FireService {
      this.messages.forEach(async (m) => {
        const found = map.some(el => el.key === m.user.id);
        if (!found){
-         await this.storage.ref('avatars').child(m.user.id).getDownloadURL().then( (res) =>{
-           let pair : Pair = {
-             key: m.user.id,
-             value: res
-           }
-           map.push(pair)
-         }).catch(() => {
-           let pair : Pair = {
-             key: m.user.id,
-             value: this.placeholderAvatarURL
-           }
-           map.push(pair)
-         })
+        await this.storage.ref('avatars').child(m.user.id).getDownloadURL().then( res =>{
+          let pair : Pair = {
+            key: m.user.id,
+            value: res
+          }
+          map.push(pair)
+        }).catch(() => {
+          let pair : Pair = {
+            key: m.user.id,
+            value: this.placeholderAvatarURL
+          }
+          map.push(pair)
+        })
        }
        var pair  = map.find(p => p.key == m.user.id)
        if (pair){
@@ -288,7 +311,7 @@ export class FireService {
   async setUser() {
     var ref = await this.firestore.collection('Users')
       .where('id', '==', this.auth.currentUser?.uid).get()
-    var data = ref.docs[0].data()
+    var data = await ref.docs[0].data()
 
     this.user = {
       id: data['id'],
@@ -298,7 +321,14 @@ export class FireService {
   }
 
   async getUserAvatar () {
-    this.UserAvatar = await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '').getDownloadURL()
+    try {
+      let avatar = await (await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '').getDownloadURL());
+      this.UserAvatar = avatar
+    } catch(e){
+
+    }
+
+
   }
 
   async updateUserAvatar ($event) {
