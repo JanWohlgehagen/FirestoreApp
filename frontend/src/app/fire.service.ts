@@ -29,7 +29,6 @@ export class FireService {
   chats: any [] = [];
   user: UserDTO | any;
   openChat: any;
-  messageCounter: any;
   placeholderAvatarURL = 'https://e7.pngegg.com/pngimages/59/644/png-clipart-silhouette-avatar-line-art-silhouette-animals-vexel.png';
   UserAvatar: string = this.placeholderAvatarURL;
   baseAxiosURL: string = 'http://127.0.0.1:5001/fullstack2023-a8967/us-central1/api/'
@@ -116,12 +115,15 @@ export class FireService {
       })
   }
 
-  getMessagesFromChat(id, messagecounter) {
+  q;
+  getMessagesFromChat(id) {
     this.openChat = this.chats.find(chat => chat.id == id);
-    this.messageCounter = messagecounter;
 
     this.messages = [];
-    this.firestore
+    if(this.q) {
+      this.q();
+    }
+    this.q = this.firestore
       .collection(`/Chats/${id}/messages`)
       .orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
@@ -196,22 +198,22 @@ export class FireService {
     if (this.openChat.id == undefined)
       return
 
-    let message : MessageDTO = {
+    let message : PostMessageDTO = {
       content: content,
       timestamp: new Date(),
-      user: this.user
+      user: this.user,
+      chatid: this.openChat.id,
+      messageCounter: this.openChat.messageCounter+1
     }
+
     var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
     var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
 
-    await this.firestore.collection(`Chats/${this.openChat.id}/messages`)
-      .add(message)
 
-    await this.firestore.collection('Chats/').doc(this.openChat.id)
-      .update({
-       messageCounter: this.messageCounter+1
-      }).then( ()=>{
-      this.messageCounter +=1
+    axios.post(this.baseAxiosURL+'Message', message).then(success => {
+
+    }).catch(err => {
+      console.log(err)
     })
 
     // @ts-ignore
@@ -254,7 +256,7 @@ export class FireService {
   convertJsonToMessageDTO(id: any, data: any): MessageDTO {
     const messageDTO: MessageDTO = {
       content: data.content,
-      timestamp: data.timestamp.toDate(),
+      timestamp: data.timestamp,
       user: data.user,
       id: id
     }
@@ -354,6 +356,15 @@ export interface MessageDTO{
   user: UserDTO;
   avatarURL?: string;
   id?: string;
+}
+export interface PostMessageDTO{
+  content: string;
+  timestamp: Date;
+  user: UserDTO;
+  avatarURL?: string;
+  id?: string;
+  chatid?: string;
+  messageCounter: number
 }
 
 export interface UserDTO {

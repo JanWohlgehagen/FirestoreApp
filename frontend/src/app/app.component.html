@@ -85,7 +85,7 @@
     {{chat.chatname}}, messages: {{chat.messageCounter}}
     <br>
     <br>
-    <button mat-raised-button color="primary" (click)="fireService.getMessagesFromChat(chat.id, chat.messageCounter)" >Open Chat</button>
+    <button mat-raised-button color="primary" (click)="fireService.getMessagesFromChat(chat.id)" >Open Chat</button>
     <span *ngIf="fireService.openChat">
       <button *ngIf="chat.id== fireService.openChat.id" mat-raised-button color="primary" (click)="fireService.clearOpenChat(chat.id)" style="margin-left: 10px">Clear</button>
     </span>

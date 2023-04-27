@@ -9,18 +9,32 @@ const cors = require('cors');
 app.use(cors());
 
 app.post('/CreateUser',(req, res) => {
-    setUser(req.body)
-    res.send("done")
-})
-
-
-function setUser(user) {
+    var user = req.body;
     admin.firestore().collection('Users').doc(user.id)
         .set({
             name: user.name,
             email: user.email,
             id: user.id
         })
-}
+    res.send("done")
+})
+
+app.post('/Message', (req, res) => {
+    console.log(req.body)
+    var message = req.body;
+    admin.firestore().collection(`Chats/${message.chatid}/messages`)
+        .add({
+            content: message.content,
+            timestamp: message.timestamp,
+            user: message.user
+        }).then(async () => {
+        await admin.firestore().collection('Chats/').doc(message.chatid)
+            .update({
+                messageCounter: message.messageCounter
+            })
+    })
+
+    res.send("added message" + req.content)
+})
 
 exports.api = functions.https.onRequest(app);
