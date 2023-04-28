@@ -107,7 +107,6 @@ export class FireService {
           if (change.type=="modified"){
             const index = this.chats.findIndex(document => document.id.toString() == change.doc.id.toString());
             this.chats[index] = chat
-            this.openChat.messageCounter = chat.messageCounter
           }
           if (change.type=="removed"){
             this.chats = this.chats.filter(m => m.id != chat.id);
@@ -143,12 +142,10 @@ export class FireService {
         });
         this.fetchAvatars();
       })
-
   }
 
   private fetchAvatars() {
     let map : Pair [] = []
-
      this.messages.forEach(async (m) => {
        const found = map.some(el => el.key === m.user.id);
        if (!found){
@@ -207,21 +204,19 @@ export class FireService {
       messageCounter: this.openChat.messageCounter+1
     }
 
-    var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
     var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
 
 
-    axios.post(this.baseAxiosURL+'Message', message).then(success => {
-      // @ts-ignore
-      ChatInputElement.value = '';
-    }).catch(err => {
-      console.log(err)
-    })
+    await axios.post(this.baseAxiosURL+'Message', message)
 
     // @ts-ignore
-    ChatBoxElement.scroll({top: 100, left: 0, behavior: 'smooth'})
+    ChatInputElement.value = '';
 
+    var ChatBoxElement = document.querySelector('#ChatBox'); //Fetch chatbox element from dom
+    // @ts-ignore
+    ChatBoxElement.scroll({left: 0, top: 100, behavior: 'smooth'})
   }
+
 
   async deleteMessage(id) {
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`).doc(id).delete()
@@ -237,8 +232,7 @@ export class FireService {
   }
 
   async clearOpenChat(chat_id) {
-    var snapshot = await this.firestore.collection(`Chats/${chat_id}/messages`)
-      .where('timestamp', '<', new Date).get();
+    var snapshot = await this.firestore.collection(`Chats/${chat_id}/messages`).get();
 
     // Delete documents in a batch
     const batch = this.firestore.batch();
@@ -246,12 +240,6 @@ export class FireService {
       batch.delete(doc.ref);
     });
     await batch.commit();
-
-    await this.firestore.collection('Chats/').doc(this.openChat.id)
-      .update({
-        messageCounter: 0
-      });
-
   }
 
   convertJsonToMessageDTO(id: any, data: any): MessageDTO {
@@ -268,10 +256,9 @@ export class FireService {
     const chatDTO: ChatDTO = {
       chatname: data.chatname,
       messageCounter: data.messageCounter,
-      owners: [],
+      owners: data.owners,
       id: id
     }
-
     return chatDTO;
   }
 

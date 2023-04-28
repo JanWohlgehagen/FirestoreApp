@@ -20,21 +20,47 @@ app.post('/CreateUser',(req, res) => {
 })
 
 app.post('/Message', (req, res) => {
-    console.log(req.body)
     var message = req.body;
     admin.firestore().collection(`Chats/${message.chatid}/messages`)
         .add({
             content: message.content,
             timestamp: message.timestamp,
             user: message.user
-        }).then(async () => {
-        await admin.firestore().collection('Chats/').doc(message.chatid)
-            .update({
-                messageCounter: message.messageCounter
-            })
-    })
-
+        })
     res.send("added message" + req.content)
 })
 
 exports.api = functions.https.onRequest(app);
+
+exports.onMessageSent = functions.firestore
+    .document('Chats/{chatId}/messages/{messageId}')
+    .onCreate( async (snap, context) => {
+        var chatid = context.params.chatId;
+        const ref =  admin.firestore()
+            .collection('Chats')
+            .doc(chatid)
+            .collection('messages');
+        const message_counter = await ref.count().get()
+
+        await admin.firestore().collection('Chats/').doc(chatid)
+            .update({
+                messageCounter: message_counter.data().count
+            })
+    });
+
+
+exports.onDeletedSent = functions.firestore
+    .document('Chats/{chatId}/messages/{messageId}')
+    .onDelete( async (snap, context) => {
+        var chatid = context.params.chatId;
+        const ref =  admin.firestore()
+            .collection('Chats')
+            .doc(chatid)
+            .collection('messages');
+        const message_counter = await ref.count().get()
+
+        await admin.firestore().collection('Chats/').doc(chatid)
+            .update({
+                messageCounter: message_counter.data().count
+            })
+    });

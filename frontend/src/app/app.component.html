@@ -100,7 +100,7 @@
 <!-- Div for the open chat -->
 <div *ngIf="fireService.openChat != undefined && fireService.auth.currentUser!=null"  style="width: 74%; float: right">
   <p style="font-size: 30px; margin: auto; padding: 5px; margin: 5px">{{fireService.openChat.chatname}}</p>
-  <mat-card id="ChatBox" style="padding: 25px; height: 74vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
+  <mat-card scroll-glue id="ChatBox" style="padding: 25px; height: 74vh; overflow:auto; display: flex; flex-direction: column-reverse; margin-bottom: 10px">
     <div *ngIf="fireService.messages.length == 0" style="margin: auto">
       <p style="font-size: 24px; margin: auto">This chat appears empty... 😢</p>
       <br>
