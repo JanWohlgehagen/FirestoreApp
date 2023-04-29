@@ -1,5 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
+const { uuid } = require('uuidv4')
+
 
 admin.initializeApp({projectId: 'fullstack2023-a8967'})
 
@@ -29,6 +31,27 @@ app.post('/Message', (req, res) => {
         })
     res.send("added message" + req.content)
 })
+
+app.put('/Avatar', async (req, res) => {
+    var img = req.rawBody;
+    var userid = req.headers.userid;
+
+    const bucket = admin.storage().bucket('gs://fullstack2023-a8967.appspot.com/');
+
+    const file = bucket.file(`avatars/${userid}.jpg`)
+    const stream = file.createWriteStream({
+        resumable: false
+    });
+
+    stream.write(Buffer.from(img));
+    stream.end();
+
+    const [uploadResult] = await file.getMetadata();
+    res.send(uploadResult.mediaLink)
+})
+
+
+
 
 exports.api = functions.https.onRequest(app);
 

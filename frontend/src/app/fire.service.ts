@@ -149,7 +149,7 @@ export class FireService {
      this.messages.forEach(async (m) => {
        const found = map.some(el => el.key === m.user.id);
        if (!found){
-        await this.storage.ref('avatars').child(m.user.id).getDownloadURL().then( res =>{
+        await this.storage.ref('avatars').child(m.user.id+'.jpg').getDownloadURL().then( res =>{
           let pair : Pair = {
             key: m.user.id,
             value: res
@@ -312,7 +312,7 @@ export class FireService {
 
   async getUserAvatar () {
     try {
-      let avatar = await (await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '').getDownloadURL());
+      let avatar = await (await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '.jpg').getDownloadURL());
       this.UserAvatar = avatar
     } catch(e){
 
@@ -322,12 +322,21 @@ export class FireService {
   }
 
   async updateUserAvatar ($event) {
+    let data = new FormData();
     const img = $event.target.files[0];
-    const uploadTast = await this.storage
-      .ref('avatars')
-      .child(this.auth.currentUser?.uid+'')
-      .put(img)
-    this.UserAvatar = await uploadTast.ref.getDownloadURL()
+    data.append('file', img, img.name);
+
+    axios.put(this.baseAxiosURL+'Avatar', img, {
+      headers: {
+        'Content-Type': img.type,
+        userid: this.auth.currentUser?.uid
+
+      }
+    }).then(success => {
+      this.UserAvatar = success.data
+    }).catch(err => {
+      console.log(err)
+    })
   }
 }
 
