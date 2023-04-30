@@ -315,22 +315,16 @@ export class FireService {
       let avatar = await (await this.storage.ref('avatars').child(this.auth.currentUser?.uid + '.jpg').getDownloadURL());
       this.UserAvatar = avatar
     } catch(e){
-
     }
-
-
   }
 
   async updateUserAvatar ($event) {
-    let data = new FormData();
     const img = $event.target.files[0];
-    data.append('file', img, img.name);
 
     axios.put(this.baseAxiosURL+'Avatar', img, {
       headers: {
         'Content-Type': img.type,
         userid: this.auth.currentUser?.uid
-
       }
     }).then(success => {
       this.UserAvatar = success.data

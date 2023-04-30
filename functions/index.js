@@ -37,7 +37,6 @@ app.put('/Avatar', async (req, res) => {
     var userid = req.headers.userid;
 
     const bucket = admin.storage().bucket('gs://fullstack2023-a8967.appspot.com/');
-
     const file = bucket.file(`avatars/${userid}.jpg`)
     const stream = file.createWriteStream({
         resumable: false
