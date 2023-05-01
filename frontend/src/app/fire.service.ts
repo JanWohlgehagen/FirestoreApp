@@ -221,7 +221,7 @@ export class FireService {
     // @ts-ignore
     ChatBoxElement.scroll({left: 0, top: 100, behavior: 'smooth'})
   }
-  
+
   async deleteMessage(id) {
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`).doc(id).delete()
   }
