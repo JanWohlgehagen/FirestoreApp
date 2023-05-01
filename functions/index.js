@@ -1,16 +1,35 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
-const { uuid } = require('uuidv4')
-
-
-admin.initializeApp({projectId: 'fullstack2023-a8967'})
-
+const rateLimit = require('express-rate-limit')
 const app = require('express')();
 const cors = require('cors');
 
-app.use(cors());
+admin.initializeApp({projectId: 'fullstack2023-a8967'})
 
-app.post('/CreateUser',(req, res) => {
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
+app.use(cors(), limiter);
+
+const validateFirebaseIdToken = async (req, res, next) => {
+    try {
+        const token = req.headers?.authorization;
+        functions.logger.log(token)
+        req.user = await admin.auth().verifyIdToken(token);
+        return next();
+    } catch (error) {
+        return res.status(403).json(error);
+    }
+}
+
+
+
+
+app.post('/CreateUser', validateFirebaseIdToken, (req, res) => {
     var user = req.body;
     admin.firestore().collection('Users').doc(user.id)
         .set({
@@ -21,7 +40,7 @@ app.post('/CreateUser',(req, res) => {
     res.send("done")
 })
 
-app.post('/Message', (req, res) => {
+app.post('/Message', validateFirebaseIdToken, (req, res) => {
     var message = req.body;
     admin.firestore().collection(`Chats/${message.chatid}/messages`)
         .add({
@@ -32,7 +51,7 @@ app.post('/Message', (req, res) => {
     res.send("added message" + req.content)
 })
 
-app.put('/Avatar', async (req, res) => {
+app.put('/Avatar', validateFirebaseIdToken, async (req, res) => {
     var img = req.rawBody;
     var userid = req.headers.userid;
 
@@ -48,9 +67,6 @@ app.put('/Avatar', async (req, res) => {
     const [uploadResult] = await file.getMetadata();
     res.send(uploadResult.mediaLink)
 })
-
-
-
 
 exports.api = functions.https.onRequest(app);
 

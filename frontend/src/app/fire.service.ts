@@ -51,8 +51,18 @@ export class FireService {
         this.getChats();
         this.setUser();
         this.getUserAvatar();
+        this.intercept();
       }
     })
+  }
+
+  intercept() {
+    axios.interceptors
+      .request
+      .use(async (request) => {
+        request.headers.Authorization = await this.auth.currentUser?.getIdToken() + ""
+        return request;
+      });
   }
 
   async register(email: string, password: string, name: string){
@@ -146,7 +156,7 @@ export class FireService {
 
   private fetchAvatars() {
     let map : Pair [] = []
-     this.messages.forEach(async (m) => {
+    this.messages.forEach(async (m) => {
        const found = map.some(el => el.key === m.user.id);
        if (!found){
         await this.storage.ref('avatars').child(m.user.id+'.jpg').getDownloadURL().then( res =>{
@@ -170,7 +180,6 @@ export class FireService {
     })
   }
 
-
   CreateNewChat(chatname: any) {
     let tempArray: string [] = [];
 
@@ -179,7 +188,6 @@ export class FireService {
     })
 
     tempArray.push(this.auth.currentUser?.email+"")
-
 
     let chat : ChatDTO = {
       chatname: chatname,
@@ -190,7 +198,6 @@ export class FireService {
     this.firestore.collection(`Chats`)
       .add(chat)
   }
-
 
   async sendMessage(content: any) {
     if (this.openChat.id == undefined)
@@ -203,9 +210,7 @@ export class FireService {
       chatid: this.openChat.id,
       messageCounter: this.openChat.messageCounter+1
     }
-
     var ChatInputElement = document.querySelector('#ChatInput'); //Fetch chatbox element from dom
-
 
     await axios.post(this.baseAxiosURL+'Message', message)
 
@@ -216,8 +221,7 @@ export class FireService {
     // @ts-ignore
     ChatBoxElement.scroll({left: 0, top: 100, behavior: 'smooth'})
   }
-
-
+  
   async deleteMessage(id) {
     await this.firestore.collection(`Chats/${this.openChat.id}/messages`).doc(id).delete()
   }
